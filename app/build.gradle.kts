@@ -1,7 +1,8 @@
 plugins {
     @Suppress("DSL_SCOPE_VIOLATION") alias(libs.plugins.androidApplication)
     @Suppress("DSL_SCOPE_VIOLATION") alias(libs.plugins.jetbrainsKotlinAndroid)
-//    @Suppress("DSL_SCOPE_VIOLATION") alias(libs.plugins.kotlinKapt)
+    @Suppress("DSL_SCOPE_VIOLATION") alias(libs.plugins.daggerHilt)
+    kotlin("kapt")
 }
 
 android {
@@ -45,6 +46,9 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -58,15 +62,11 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation)
-//    implementation(libs.dagger.hilt.android)
-//    implementation(libs.dagger.hilt.android.compiler)
-//    implementation(libs.androidx.hilt.work)
-//    implementation(libs.androidx.hilt.compiler)
-//    implementation(libs.androidx.hilt.navigation.compose)
-//    implementation(libs.androidx.work.runtime.ktx)
-//    implementation(libs.androidx.lifecycle.viewmodel.compose)
-//    implementation(libs.androidx.lifecycle.viewmodel.ktx)
-//    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    kapt(libs.dagger.hilt.android.compiler)
+    implementation(libs.timber)
+    implementation(libs.mlkit.translate)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
