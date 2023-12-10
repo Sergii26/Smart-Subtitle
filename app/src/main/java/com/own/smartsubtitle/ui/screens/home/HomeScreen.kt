@@ -1,6 +1,5 @@
-package com.own.smartsubtitle.ui.screens
+package com.own.smartsubtitle.ui.screens.home
 
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,17 +41,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.own.smartsubtitle.domain.model.Subtitle
 import com.own.smartsubtitle.domain.model.TranslationItem
+import com.own.smartsubtitle.ui.navigation.NavDest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel()
+    navController: NavController,
+    viewModel: HomeViewModel = hiltViewModel(),
 ) {
 
     val fileUri = rememberLauncherForActivityResult(
@@ -66,21 +66,40 @@ fun HomeScreen(
     val isStartTimePicked = remember { mutableStateOf(false) }
 
     if (viewModel.subtitles.value.isEmpty()) {
-        Button(
-            modifier = Modifier
-                .alpha(if (viewModel.subtitles.value.isEmpty()) 1f else 0f)
-                .fillMaxSize()
-                .wrapContentSize()
-                .requiredSize(if (viewModel.subtitles.value.isEmpty()) 166.dp else 0.dp),
-            onClick = { fileUri.launch(arrayOf("application/x-subrip"))}
-        ) {
-            Text(text = "Pick File")
+        Column(verticalArrangement = Arrangement.Center) {
+            Button(
+                modifier = Modifier
+                    .alpha(if (viewModel.subtitles.value.isEmpty()) 1f else 0f)
+                    .fillMaxSize()
+                    .wrapContentSize()
+                    .requiredSize(if (viewModel.subtitles.value.isEmpty()) 166.dp else 0.dp),
+                onClick = { fileUri.launch(arrayOf("application/x-subrip")) }
+            ) {
+                Text(text = "Pick File")
+            }
+
+            Button(
+                modifier = Modifier
+                    .alpha(if (viewModel.subtitles.value.isEmpty()) 1f else 0f)
+                    .fillMaxSize()
+                    .wrapContentSize()
+                    .requiredSize(if (viewModel.subtitles.value.isEmpty()) 166.dp else 0.dp),
+                onClick = { navController.navigate(NavDest.Word.route) }
+            ) {
+                Text(text = "Show Words")
+            }
         }
     } else {
         if (isStartTimePicked.value) {
-            ShowSubtitles(viewModel.subtitles, viewModel.translation, viewModel.activeSubtitleIndex) {
-                viewModel.onWordClicked(it)
-            }
+            ShowSubtitles(
+                viewModel.subtitles,
+                viewModel.translation,
+                viewModel.activeSubtitleIndex,
+                onClicked = { viewModel.onWordClicked(it) },
+                onSaveClicked = { source, translated ->
+                    viewModel.onSaveWordClicked(source, translated)
+                }
+            )
         } else {
             ShowStartTimePicker { hours, minutes, seconds ->
                 viewModel.onStartTimePicked(hours, minutes, seconds)
@@ -106,7 +125,7 @@ private fun ShowStartTimePicker(onClicked: (String, String, String) -> Unit) {
         ) {
             TextField(
                 value = hours,
-                onValueChange = { hours  = it },
+                onValueChange = { hours = it },
                 label = { Text("Hours") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
@@ -149,28 +168,47 @@ private fun ShowStartTimePicker(onClicked: (String, String, String) -> Unit) {
 private fun ShowSubtitles(
     subtitles: State<List<Subtitle>>,
     translation: Flow<TranslationItem>,
-    activeSubtitleIndex: Flow<Int?>,
-    onClicked: (TranslationItem) -> Unit
+    activeSubtitleIndex: Flow<ActiveSubtitle?>,
+    onClicked: (TranslationItem) -> Unit,
+    onSaveClicked: (String, String) -> Unit
 ) {
-    Timber.d("check task. recomposition")
-    val index = activeSubtitleIndex.collectAsState(initial = 0)
+    val activeIndex = activeSubtitleIndex.collectAsState(initial = ActiveSubtitle(0, false))
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val scrollOffset = LocalDensity.current.run { LocalConfiguration.current.screenHeightDp.dp.toPx() } * 0.8
-    LaunchedEffect(key1 = index.value) {
-        Timber.d("check task. launch effect")
-        scope.launch { index.value?.let { listState.animateScrollToItem(it, -scrollOffset.toInt()) } }
+    LaunchedEffect(key1 = activeIndex.value) {
+        scope.launch {
+            activeIndex.value?.let {
+                if (it.withAnim) {
+                    listState.animateScrollToItem(it.index, -scrollOffset.toInt())
+                } else {
+                    listState.scrollToItem(it.index, -scrollOffset.toInt())
+                }
+            }
+        }
     }
 
     LazyColumn(
         state = listState,
         modifier = Modifier
-            .padding(4.dp)
             .fillMaxWidth()
     ) {
         itemsIndexed(subtitles.value) {index, subtitle ->
-            ShowSubtitle(subtitle, translation.map { if (it.id == subtitle.position) it else null }, activeSubtitleIndex.map { it == index }) {
-                onClicked(it)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = if (index == activeIndex.value?.index) Color.LightGray
+                        else Color.Transparent,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            ) {
+                ShowSubtitle(
+                    subtitle,
+                    translation.map { if (it.id == subtitle.position) it else null},
+                    onClicked = { onClicked(it) },
+                    onSaveClicked = { str1, str2 -> onSaveClicked(str1, str2) }
+                )
             }
 
             Spacer(modifier = Modifier
@@ -184,22 +222,21 @@ private fun ShowSubtitles(
 private fun ShowSubtitle(
     subtitle: Subtitle,
     translation: Flow<TranslationItem?>,
-    isActive: Flow<Boolean>,
-    onClicked: (TranslationItem) -> Unit
+    onClicked: (TranslationItem) -> Unit,
+    onSaveClicked: (String, String) -> Unit
 ) {
-    val activation = isActive.collectAsState(initial = false)
     val trans = translation.collectAsState(initial = null)
     val isClicked = remember { mutableStateOf(false) }
     val clickedText = remember { mutableStateOf("") }
     val translatedText = if (trans.value != null) {
         "${clickedText.value} = ${trans.value?.word}"
     } else ""
+    val isSaved = remember { mutableStateOf(false) }
 
     isClicked.value = trans.value != null
 
-
     Row(
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(if (trans.value == null) 1f else 0f)
@@ -208,16 +245,28 @@ private fun ShowSubtitle(
             color = Color.Blue,
             text = translatedText
         )
+        Text(
+            color = if (isSaved.value) Color.LightGray else Color.Green,
+            text = if (isSaved.value) "Done" else "Save",
+            modifier = Modifier
+                .alpha(if (translatedText.isNotEmpty()) 1f else 0f)
+                .clickable {
+                    if (!isSaved.value && translatedText.isNotEmpty()) {
+                        isSaved.value = true
+                        trans.value?.word?.let {
+                            if (it.isNotEmpty()) onSaveClicked(clickedText.value, it)
+                        }
+                    }
+                }
+        )
     }
 
     subtitle.textLines.forEach {
         Row(
             horizontalArrangement = Arrangement.Start,
-            modifier = Modifier.background(
-                color = if (activation.value) Color.LightGray
-                else Color.Transparent,
-                shape = RoundedCornerShape(4.dp)
-            ).fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp)
         ) {
             it.split(" ").forEach { word ->
                 Text(
