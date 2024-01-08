@@ -7,4 +7,6 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
     @Suppress("DSL_SCOPE_VIOLATION")
     alias(libs.plugins.daggerHilt) apply false
+    @Suppress("DSL_SCOPE_VIOLATION")
+    alias(libs.plugins.googleServices) apply false
 }

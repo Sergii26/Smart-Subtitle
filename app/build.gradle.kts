@@ -3,6 +3,7 @@ plugins {
     @Suppress("DSL_SCOPE_VIOLATION") alias(libs.plugins.jetbrainsKotlinAndroid)
     @Suppress("DSL_SCOPE_VIOLATION") alias(libs.plugins.daggerHilt)
     kotlin("kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -81,6 +82,9 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
     kapt(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

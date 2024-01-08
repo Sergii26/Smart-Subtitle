@@ -32,14 +32,10 @@ class EnUaTranslationManager: TranslationManager {
     init {
         enUaTranslator.downloadModelIfNeeded(conditions)
             .addOnSuccessListener {
-                // Model downloaded successfully. Okay to start translating.
-                // (Set a flag, unhide the translation UI, etc.)
                 Timber.d("Translation model successfully downloaded")
-
             }
             .addOnFailureListener { exception ->
-                // Model couldn’t be downloaded or other internal error.
-                // ...
+                Timber.d("Failed to download translation model, error: ${exception.message}")
             }
     }
 
@@ -47,14 +43,12 @@ class EnUaTranslationManager: TranslationManager {
         enUaTranslator.translate(item.word)
             .addOnSuccessListener { translatedText ->
                 // Translation successful.
-                Timber.d("Text translated: $translatedText")
                 translationScope.launch {
                     _translationFlow.emit(TranslationItem(item.id, translatedText))
                 }
             }
             .addOnFailureListener { exception ->
-                // Error.
-                // ...
+                Timber.d("Failed to translate, error: ${exception.message}")
             }
     }
 

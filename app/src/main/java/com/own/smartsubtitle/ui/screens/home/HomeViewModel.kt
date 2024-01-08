@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,9 +37,33 @@ class HomeViewModel @Inject constructor(
     private val _activeSubtitleIndex = MutableStateFlow<ActiveSubtitle?>(null)
     val activeSubtitleIndex = _activeSubtitleIndex as Flow<ActiveSubtitle?>
 
+    private val _translatedWords = MutableStateFlow<List<String>>(emptyList())
+    val translatedWords = _translatedWords as Flow<List<String>>
+
     private var timerJob: Job? = null
 
-    val translation = translationManager.translationFlow
+    private val awaitTranslationList = mutableListOf<TranslationItem>()
+
+    private val _translation = MutableStateFlow(TranslationItem(-1, ""))
+    val translation = _translation as Flow<TranslationItem>
+
+    private val _isSessionRunning = mutableStateOf(false)
+    val isSessionRunning = _isSessionRunning as State<Boolean>
+
+    init {
+        Timber.d("Init view model. active index: ${_activeSubtitleIndex.value}")
+        viewModelScope.launch {
+            translationManager.translationFlow.collect { item ->
+                _translation.value = item
+                awaitTranslationList.find { it.id ==  item.id }?.let { awaitItem ->
+                    val newList = _translatedWords.value.toMutableList()
+                    newList.add("${awaitItem.word} = ${item.word}")
+                    awaitTranslationList.remove(awaitItem)
+                    _translatedWords.value = newList
+                }
+            }
+        }
+    }
 
     fun onUriReceived(uri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -53,6 +78,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onWordClicked(item: TranslationItem) {
+        awaitTranslationList.add(item)
         translationManager.translate(item)
     }
 
@@ -63,11 +89,14 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onStartTimePicked(hours: String, minutes: String, seconds: String) {
-        beginSession((((hours.toInt() * 60 + minutes.toInt()) * 60 + seconds.toInt()) * 1000L))
+        val startTimeMillis = (((hours.toInt() * 60 + minutes.toInt()) * 60 + seconds.toInt()) * 1000L)
+        _isSessionRunning.value = true
+        beginSession(startTimeMillis)
     }
 
     private fun beginSession(startFrom: Long) {
         timerJob?.cancel()
+
         val startIndex = _subtitles.value.indexOfFirst { it.startTime > startFrom }
         val subs = _subtitles.value
         val startedTime = System.currentTimeMillis() - startFrom
@@ -77,7 +106,7 @@ class HomeViewModel @Inject constructor(
             var index = startIndex
             delay(subs[startIndex + 1].startTime - startFrom)
 
-            while (index < subs.size) {
+            while (index < subs.size - 1) {
                 index++
                 _activeSubtitleIndex.emit(ActiveSubtitle(index, true))
                 if (index + 1 != subs.size) {

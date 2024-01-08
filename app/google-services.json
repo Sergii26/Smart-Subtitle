@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "602834975098",
+    "project_id": "smart-subtitle",
+    "storage_bucket": "smart-subtitle.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:602834975098:android:661a3b4b91b3e1129e7ec3",
+        "android_client_info": {
+          "package_name": "com.own.smartsubtitle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdsf4RiSAJLdcSuLsuzQrc1QhnIUDILpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

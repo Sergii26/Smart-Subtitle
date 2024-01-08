@@ -15,6 +15,8 @@ lifecycle = "2.6.2"
 timber = "5.0.1"
 translate = "17.0.2"
 room = "2.5.1"
+googleServices = "4.4.0"
+firebaseBom = "32.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,8 +48,11 @@ mlkit-translate = { group = "com.google.mlkit", name = "translate", version.ref 
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 daggerHilt = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "googleServices" }

@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.own.smartsubtitle.ui.screens.home.HomeScreen
+import com.own.smartsubtitle.ui.screens.test.EqScreen
 import com.own.smartsubtitle.ui.screens.word.WordScreen
 
 
@@ -26,10 +27,14 @@ fun NavGraph(
         composable(route = NavDest.Word.route) {
             WordScreen()
         }
+        composable(route = NavDest.Test.route) {
+            EqScreen()
+        }
     }
 }
 
 sealed class NavDest(val route: String) {
     data object Home: NavDest("home")
-    data object Word: NavDest("wrod")
+    data object Word: NavDest("word")
+    data object Test: NavDest("test")
 }
