@@ -3,18 +3,8 @@ package com.own.smartsubtitle.ui.screens.test
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.own.smartsubtitle.domain.model.WordTranslation
-import com.own.smartsubtitle.domain.repository.WordsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class EqViewModel @Inject constructor(
@@ -26,13 +16,6 @@ class EqViewModel @Inject constructor(
 
     init {
         _presets.value = generatePresets()
-    }
-
-    private suspend fun setPreset(): Flow<Boolean> {
-       return flow {
-           delay(50)
-           emit(Random.nextInt(0, 99) != 34)
-       }
     }
 
     private fun generatePresets(): List<Preset> {
