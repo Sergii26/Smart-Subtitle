@@ -1,4 +1,4 @@
-package com.own.smartsubtitle.ui.screens.test
+package com.own.smartsubtitle.ui.screens.test.eq
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf

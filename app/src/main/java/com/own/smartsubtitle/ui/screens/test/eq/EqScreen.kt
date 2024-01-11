@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 
-package com.own.smartsubtitle.ui.screens.test
+package com.own.smartsubtitle.ui.screens.test.eq
 
 
 import android.graphics.PointF

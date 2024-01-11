@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.own.smartsubtitle.ui.screens.home.HomeScreen
-import com.own.smartsubtitle.ui.screens.test.EqScreen
+import com.own.smartsubtitle.ui.screens.test.eq.EqScreen
 import com.own.smartsubtitle.ui.screens.word.WordScreen
 
 
