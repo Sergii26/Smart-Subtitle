@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.own.smartsubtitle.ui.screens.home.HomeScreen
+import com.own.smartsubtitle.ui.screens.test.drag_and_drop.DragAndDropScreen
 import com.own.smartsubtitle.ui.screens.test.eq.EqScreen
 import com.own.smartsubtitle.ui.screens.word.WordScreen
 
@@ -28,7 +29,8 @@ fun NavGraph(
             WordScreen()
         }
         composable(route = NavDest.Test.route) {
-            EqScreen()
+//            EqScreen()
+            DragAndDropScreen()
         }
     }
 }
